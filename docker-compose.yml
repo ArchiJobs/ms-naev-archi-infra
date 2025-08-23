@@ -1,0 +1,144 @@
+version: '3.9'
+
+services:
+  # Base de datos centralizada
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+
+  # 🌸 Spring Boot Services
+  
+  # API Gateway (Spring Cloud Gateway) - COMENTADO HASTA CREAR DOCKERFILE
+  # ms-archi-gateway:
+  #   build: ./ms-naev-archi-gateway
+  #   container_name: ms_archi_gateway
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - postgres
+  #     - ms-archi-auth-profile
+  #     - ms-archi-jobs-public
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+  #     SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+  #     SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+  # Autenticación y Perfiles (Spring Security + JWT) - COMENTADO HASTA CREAR DOCKERFILE
+  # ms-archi-auth-profile:
+  #   build: ./ms-archi-auth
+  #   container_name: ms_archi_auth_profile
+  #   ports:
+  #     - "8081:8081"
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+  #     SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+  #     SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+  # 🟢 NestJS Services
+  
+  # API pública de trabajos (sin auth) - COMENTADO HASTA CREAR DOCKERFILE
+  # ms-archi-jobs-public:
+  #   build: ./backend-naev-job-search
+  #   container_name: ms_archi_jobs_public
+  #   ports:
+  #     - "3002:3002"
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+  #     PORT: 3002
+  #     NODE_ENV: production
+
+  # Funcionalidades para trabajadores (con auth) - TODO: CREAR MICROSERVICIO
+  # ms-archi-job-seeker:
+  #   build: ./ms-archi-job-seeker
+  #   container_name: ms_archi_job_seeker
+  #   ports:
+  #     - "3003:3003"
+  #   depends_on:
+  #     - postgres
+  #     - ms-archi-auth-profile
+  #   environment:
+  #     DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+  #     PORT: 3003
+  #     NODE_ENV: production
+  #     AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
+
+  # Funcionalidades para empresas (con auth + suscripción) - TODO: CREAR MICROSERVICIO
+  # ms-archi-employer:
+  #   build: ./ms-archi-employer
+  #   container_name: ms_archi_employer
+  #   ports:
+  #     - "3004:3004"
+  #   depends_on:
+  #     - postgres
+  #     - ms-archi-auth-profile
+  #     - ms-archi-payments
+  #   environment:
+  #     DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+  #     PORT: 3004
+  #     NODE_ENV: production
+  #     AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
+  #     PAYMENT_SERVICE_URL: ${PAYMENT_SERVICE_URL}
+
+  # Comunicaciones y notificaciones - TODO: CREAR MICROSERVICIO
+  # ms-archi-notifications:
+  #   build: ./ms-archi-notifications
+  #   container_name: ms_archi_notifications
+  #   ports:
+  #     - "3005:3005"
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+  #     PORT: 3005
+  #     NODE_ENV: production
+  #     SMTP_HOST: ${SMTP_HOST}
+  #     SMTP_PORT: ${SMTP_PORT}
+  #     SMTP_USER: ${SMTP_USER}
+  #     SMTP_PASS: ${SMTP_PASS}
+
+  # Facturación empresas - TODO: CREAR MICROSERVICIO
+  # ms-archi-payments:
+  #   build: ./ms-archi-payments
+  #   container_name: ms_archi_payments
+  #   ports:
+  #     - "3006:3006"
+  #   depends_on:
+  #     - postgres
+  #     - ms-archi-auth-profile
+  #   environment:
+  #     DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+  #     PORT: 3006
+  #     NODE_ENV: production
+  #     AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
+  #     STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+  #     STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+
+  # Frontend Angular - COMENTADO HASTA CREAR DOCKERFILE
+  # frontend-naev-job-search:
+  #   build: ./frontend-naev-job-search
+  #   container_name: frontend_naev_job_search
+  #   ports:
+  #     - "4200:4200"
+  #   depends_on:
+  #     - ms-archi-gateway
+  #   environment:
+  #     API_URL: http://ms-archi-gateway:8080
+
+volumes:
+  postgres_data:
+    name: jobsearch_postgres_data
+    driver: local
